@@ -25,5 +25,5 @@ variable "vnet_address_space" {
 
 variable "subnet_address_prefixes" {
   type    = list(string)
-  default = ["10.10.1.0/22"]
+  default = ["10.10.4.0/22"]
 }
