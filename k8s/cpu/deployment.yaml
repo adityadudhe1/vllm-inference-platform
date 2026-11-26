@@ -31,7 +31,7 @@ spec:
             - vllm
           args:
             - serve
-            - Qwen/Qwen2.5-1.5B-Instruct
+            - Qwen/Qwen2.5-0.5B-Instruct
             - --host
             - 0.0.0.0
             - --port
@@ -41,7 +41,7 @@ spec:
             - --max-num-seqs
             - "1"           
             - --gpu-memory-utilization
-            - "0.60"
+            - "0.40"
           volumeMounts:
             - name: shm
               mountPath: /dev/shm
