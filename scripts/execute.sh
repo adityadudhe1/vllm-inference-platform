@@ -3,10 +3,17 @@
 # KV Cache Allocated: 0.4 GiB (6.0 GiB - 5.6 GiB = 0.4 GiB).
 # Token Capacity: That 0.4 GiB of KV cache gives you 14,976 tokens of total capacity—meaning it can easily handle your 1,024-token limit with 14.62x concurrency headroom.
 
-##############
-###Test API###
-##############
+###############
+# Port Forward
+###############
+
 kubectl port-forward svc/vllm -n vllm 8000:8000
+
+kubectl port-forward svc/prometheus-grafana -n monitoring 3000:80
+
+###############
+# Test API
+###############
 
 curl http://localhost:8000/v1/models
 
@@ -22,16 +29,19 @@ curl http://localhost:8000/v1/chat/completions \
   ]
 }'
 
-To get Grafana admin password:
-kubectl --namespace monitoring get secrets prometheus-grafana -o jsonpath="{.data.admin-password}" | base64 -d ; echo
+###############
+# Grafana Password
+###############
+
+kubectl --namespace monitoring get secrets prometheus-grafana \
+-o jsonpath="{.data.admin-password}" | base64 -d ; echo
 
 To load prometheus UI:
 kubectl port-forward svc/prometheus-grafana -n monitoring 3000:80
 
-
-############
-#Install K6#
-############
+###############
+# K6
+###############
 Execute K6 inside pod in kubernetes:
 pod.yaml
 apiVersion: v1
@@ -46,21 +56,60 @@ spec:
       command:
         - sleep
         - infinity
-        
-#kubectl cp chat-completion.js vllm/k6:/tmp/chat-completion.js
+kubectl cp chat-completion.js vllm/k6:/tmp/chat-completion.js
 
-#kubectl exec -it k6 -n vllm -- k6 run /tmp/chat-completion.js
+kubectl exec -it k6 -n vllm -- k6 run /tmp/chat-completion.js
 
-Below metrics to monitor in Grafana:
+###############
+# Grafana Metrics
+###############
+
 vllm:num_requests_running
+
 vllm:num_requests_waiting
+
 vllm:time_to_first_token_seconds_count
+
 node_memory_MemAvailable_bytes
 
-VUs           : 5
-Duration      : 1 minute
-Requests      : 20
-Failure Rate  : 0%
-Avg Latency   : 17.8 sec
-P95 Latency   : 21.24 sec
-Max Latency   : 22.89 sec
+###############
+# Benchmark Results
+###############
+
+1 VU
+Avg Latency : 3.87s
+P95         : 4.76s
+Failures    : 0%
+
+5 VUs
+Avg Latency : 17.8s
+P95         : 21.24s
+Failures    : 0%
+
+10 VUs
+Avg Latency : 32.89s
+P95         : 44.67s
+Failures    : 0%
+
+###############
+# Lessons Learned
+###############
+
+Use:
+vllm/vllm-openai-cpu:latest-x86_64
+
+Set:
+VLLM_TARGET_DEVICE=cpu
+
+Add:
+emptyDir /dev/shm
+
+Reduce:
+--max-model-len=1024
+--max-num-seqs=1
+
+Set:
+--gpu-memory-utilization=0.60
+
+ServiceMonitor requires:
+metadata.labels.app=vllm on Service
