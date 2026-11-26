@@ -3,6 +3,9 @@
 # KV Cache Allocated: 0.4 GiB (6.0 GiB - 5.6 GiB = 0.4 GiB).
 # Token Capacity: That 0.4 GiB of KV cache gives you 14,976 tokens of total capacity—meaning it can easily handle your 1,024-token limit with 14.62x concurrency headroom.
 
+##############
+###Test API###
+##############
 kubectl port-forward svc/vllm -n vllm 8000:8000
 
 curl http://localhost:8000/v1/models
@@ -22,12 +25,14 @@ curl http://localhost:8000/v1/chat/completions \
 To get Grafana admin password:
 kubectl --namespace monitoring get secrets prometheus-grafana -o jsonpath="{.data.admin-password}" | base64 -d ; echo
 
-To load prom UI:
+To load prometheus UI:
 kubectl port-forward svc/prometheus-grafana -n monitoring 3000:80
 
 
-
-Execute K6 thhgouh pod in kubernetes:
+############
+#Install K6#
+############
+Execute K6 inside pod in kubernetes:
 pod.yaml
 apiVersion: v1
 kind: Pod
