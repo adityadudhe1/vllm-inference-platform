@@ -4,6 +4,8 @@ kind: Service
 metadata:
   name: vllm
   namespace: vllm
+  labels:
+    app: vllm
   annotations:
     prometheus.io/scrape: "true"
     prometheus.io/port: "8000"
