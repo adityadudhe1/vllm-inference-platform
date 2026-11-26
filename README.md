@@ -320,9 +320,38 @@ By completing this project, the following areas will be covered:
 🚧 Work In Progress
 
 ---
+## Lessons Learned
 
-## Author
+### CPU Backend
 
-**Aditya Dudhe**
+The standard `vllm/vllm-openai` image failed on CPU-only AKS nodes with the error:
 
-DevOps Engineer | Kubernetes | Azure | Terraform | AI Platform Engineering
+```text
+Failed to infer device type
+```
+
+The solution was to use:
+
+```text
+vllm/vllm-openai-cpu:latest-x86_64
+```
+
+and configure:
+
+```text
+VLLM_TARGET_DEVICE=cpu
+```
+
+### Shared Memory
+
+vLLM required additional `/dev/shm` space for shared-memory communication between processes.
+
+### Memory Constraints
+
+Running Qwen2.5-1.5B on an AKS Standard_D4s_v5 node required reducing:
+
+- max-model-len
+- max-num-seqs
+- gpu-memory-utilization
+
+to fit memory constraints during KV cache allocation.
